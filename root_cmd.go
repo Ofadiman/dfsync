@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 
 	"github.com/charmbracelet/log"
@@ -62,6 +63,19 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 
 			if toFileInfo.IsDir() == false {
 				logger.Errorf("path passed to --to option is not directory, received %v", to.Value.String())
+				return
+			}
+
+			dir, err := os.Open(from.Value.String())
+			defer dir.Close()
+			if err != nil {
+				logger.Errorf("unhandled error: %v", err.Error())
+				return
+			}
+
+			_, err = dir.Readdirnames(1)
+			if err == io.EOF {
+				logger.Errorf("directory passed to --from option is empty, received %v", from.Value.String())
 				return
 			}
 

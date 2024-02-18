@@ -12,9 +12,10 @@ import (
 
 type RootCommandSuite struct {
 	suite.Suite
-	logger *log.Logger
-	logs   *bytes.Buffer
-	file   *os.File
+	logger       *log.Logger
+	logs         *bytes.Buffer
+	file         *os.File
+	emptyDirPath string
 }
 
 func (suite *RootCommandSuite) BeforeTest() {
@@ -27,10 +28,20 @@ func (suite *RootCommandSuite) BeforeTest() {
 		suite.logger.Fatal(err)
 	}
 	suite.file = file
+
+	emptyDirPath, err := os.MkdirTemp("/tmp", "")
+	if err != nil {
+		suite.logger.Fatal(err)
+	}
+	suite.emptyDirPath = emptyDirPath
 }
 
 func (suite *RootCommandSuite) AfterTest() {
 	if err := os.Remove(suite.file.Name()); err != nil {
+		suite.logger.Fatal(err)
+	}
+
+	if err := os.Remove(suite.emptyDirPath); err != nil {
 		suite.logger.Fatal(err)
 	}
 }
@@ -91,6 +102,21 @@ func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToToOptionIsNotD
 	command.Execute()
 
 	assert.Equal(suite.T(), "ERRO path passed to --to option is not directory, received "+suite.file.Name()+"\n", suite.logs.String())
+
+	suite.AfterTest()
+}
+
+func (suite *RootCommandSuite) TestShouldExitEarlyWhenFromDirectoryIsEmpty() {
+	suite.BeforeTest()
+
+	command := createRootCommand(suite.logger)
+	command.SetOut(suite.logs)
+	command.SetErr(suite.logs)
+	command.SetArgs([]string{"--from", suite.emptyDirPath})
+
+	command.Execute()
+
+	assert.Equal(suite.T(), "ERRO directory passed to --from option is empty, received "+suite.emptyDirPath+"\n", suite.logs.String())
 
 	suite.AfterTest()
 }
