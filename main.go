@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +23,12 @@ const (
 	FLAG_TO   = "to"
 )
 
+var logger = log.NewWithOptions(
+	os.Stdout, log.Options{
+		ReportTimestamp: false,
+	},
+)
+
 var rootCmd = &cobra.Command{
 	Use:     "dfsync",
 	Short:   "Synchronize dot files",
@@ -32,26 +38,25 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		from := cmd.Flag(FLAG_FROM)
 		to := cmd.Flag(FLAG_TO)
-		fmt.Printf("Files will be synchronized from %v directory to %v directory.\n", from.Value.String(), to.Value.String())
+		logger.Infof("Files will be synchronized from " + from.Value.String() + " directory to " + to.Value.String() + " directory")
 	},
 }
 
 func main() {
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	rootCmd.PersistentFlags().StringP(FLAG_FROM, "f", cwd, "directory from which symlinks will be created")
 	rootCmd.PersistentFlags().StringP(FLAG_TO, "t", home, "directory to which symlinks will be created")
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		logger.Fatal(err)
 	}
 }
