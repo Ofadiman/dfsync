@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	FLAG_FROM = "from"
-	FLAG_TO   = "to"
+	OPTION_SOURCE_DIRECTORY = "source-directory"
+	OPTION_TARGET_DIRECTORY = "target-directory"
 )
 
 func createRootCommand(logger *log.Logger) *cobra.Command {
@@ -27,17 +27,17 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "dfsync",
 		Short:   "Synchronize dot files",
-		Example: "dfsync --source ./src --destination ~/",
+		Example: "dfsync --source-directory ./src --target-directory ~/",
 		Long:    `Dot files sync is a tool that allows you to painlessly synchronize dot files across multiple environments.`,
 		Version: "1.0.0",
 		Run: func(cmd *cobra.Command, args []string) {
-			from := cmd.Flag(FLAG_FROM)
-			to := cmd.Flag(FLAG_TO)
+			from := cmd.Flag(OPTION_SOURCE_DIRECTORY)
+			to := cmd.Flag(OPTION_TARGET_DIRECTORY)
 
 			fromFileInfo, err := os.Stat(from.Value.String())
 			if err != nil && os.IsNotExist(err) {
 				if os.IsNotExist(err) {
-					logger.Errorf("path passed to --from option does not exist, received %v", from.Value.String())
+					logger.Errorf("path passed to --source-directory option does not exist, received %v", from.Value.String())
 					return
 				}
 
@@ -46,14 +46,14 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 			}
 
 			if fromFileInfo.IsDir() == false {
-				logger.Errorf("path passed to --from option is not directory, received %v", from.Value.String())
+				logger.Errorf("path passed to --source-directory option is not directory, received %v", from.Value.String())
 				return
 			}
 
 			toFileInfo, err := os.Stat(to.Value.String())
 			if err != nil {
 				if os.IsNotExist(err) {
-					logger.Errorf("directory passed to --to option does not exist, received %v", to.Value.String())
+					logger.Errorf("directory passed to --target-directory option does not exist, received %v", to.Value.String())
 					return
 				}
 
@@ -62,7 +62,7 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 			}
 
 			if toFileInfo.IsDir() == false {
-				logger.Errorf("path passed to --to option is not directory, received %v", to.Value.String())
+				logger.Errorf("path passed to --target-directory option is not directory, received %v", to.Value.String())
 				return
 			}
 
@@ -75,7 +75,7 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 
 			_, err = dir.Readdirnames(1)
 			if err == io.EOF {
-				logger.Errorf("directory passed to --from option is empty, received %v", from.Value.String())
+				logger.Errorf("directory passed to --source-directory option is empty, received %v", from.Value.String())
 				return
 			}
 
@@ -83,8 +83,8 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 		},
 	}
 
-	command.PersistentFlags().StringP(FLAG_FROM, "f", cwd, "directory from which symlinks will be created")
-	command.PersistentFlags().StringP(FLAG_TO, "t", home, "directory to which symlinks will be created")
+	command.PersistentFlags().StringP(OPTION_SOURCE_DIRECTORY, "f", cwd, "directory from which symlinks will be created")
+	command.PersistentFlags().StringP(OPTION_TARGET_DIRECTORY, "t", home, "directory to which symlinks will be created")
 
 	return command
 }

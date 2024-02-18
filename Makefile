@@ -1,7 +1,7 @@
 include .env
 
 debug:
-	@go run ./... --from $(DFSYNC_FROM) --to $(DFSYNC_TO)
+	@go run ./... --source-directory $(DFSYNC_FROM) --target-directory $(DFSYNC_TO)
 
 help:
 	@go run ./... --help

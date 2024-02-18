@@ -52,11 +52,11 @@ func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToFromOptionDoes
 	command := createRootCommand(suite.logger)
 	command.SetOut(suite.logs)
 	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--from", "memes"})
+	command.SetArgs([]string{"--source-directory", "memes"})
 
 	command.Execute()
 
-	assert.Equal(suite.T(), "ERRO path passed to --from option does not exist, received memes\n", suite.logs.String())
+	assert.Equal(suite.T(), "ERRO path passed to --source-directory option does not exist, received memes\n", suite.logs.String())
 
 	suite.AfterTest()
 }
@@ -67,11 +67,11 @@ func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToFromOptionIsNo
 	command := createRootCommand(suite.logger)
 	command.SetOut(suite.logs)
 	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--from", suite.file.Name()})
+	command.SetArgs([]string{"--source-directory", suite.file.Name()})
 
 	command.Execute()
 
-	assert.Equal(suite.T(), "ERRO path passed to --from option is not directory, received "+suite.file.Name()+"\n", suite.logs.String())
+	assert.Equal(suite.T(), "ERRO path passed to --source-directory option is not directory, received "+suite.file.Name()+"\n", suite.logs.String())
 
 	suite.AfterTest()
 }
@@ -82,11 +82,11 @@ func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToToOptionDoesNo
 	command := createRootCommand(suite.logger)
 	command.SetOut(suite.logs)
 	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--to", "memes"})
+	command.SetArgs([]string{"--target-directory", "memes"})
 
 	command.Execute()
 
-	assert.Equal(suite.T(), "ERRO directory passed to --to option does not exist, received memes\n", suite.logs.String())
+	assert.Equal(suite.T(), "ERRO directory passed to --target-directory option does not exist, received memes\n", suite.logs.String())
 
 	suite.AfterTest()
 }
@@ -97,11 +97,11 @@ func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToToOptionIsNotD
 	command := createRootCommand(suite.logger)
 	command.SetOut(suite.logs)
 	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--to", suite.file.Name()})
+	command.SetArgs([]string{"--target-directory", suite.file.Name()})
 
 	command.Execute()
 
-	assert.Equal(suite.T(), "ERRO path passed to --to option is not directory, received "+suite.file.Name()+"\n", suite.logs.String())
+	assert.Equal(suite.T(), "ERRO path passed to --target-directory option is not directory, received "+suite.file.Name()+"\n", suite.logs.String())
 
 	suite.AfterTest()
 }
@@ -112,11 +112,11 @@ func (suite *RootCommandSuite) TestShouldExitEarlyWhenFromDirectoryIsEmpty() {
 	command := createRootCommand(suite.logger)
 	command.SetOut(suite.logs)
 	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--from", suite.emptyDirPath})
+	command.SetArgs([]string{"--source-directory", suite.emptyDirPath})
 
 	command.Execute()
 
-	assert.Equal(suite.T(), "ERRO directory passed to --from option is empty, received "+suite.emptyDirPath+"\n", suite.logs.String())
+	assert.Equal(suite.T(), "ERRO directory passed to --source-directory option is empty, received "+suite.emptyDirPath+"\n", suite.logs.String())
 
 	suite.AfterTest()
 }
