@@ -33,13 +33,35 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 			from := cmd.Flag(FLAG_FROM)
 			to := cmd.Flag(FLAG_TO)
 
-			if _, err := os.Stat(from.Value.String()); os.IsNotExist(err) {
-				logger.Errorf("directory passed to --from option does not exist, received %v", from.Value.String())
+			fromFileInfo, err := os.Stat(from.Value.String())
+			if err != nil && os.IsNotExist(err) {
+				if os.IsNotExist(err) {
+					logger.Errorf("path passed to --from option does not exist, received %v", from.Value.String())
+					return
+				}
+
+				logger.Errorf("unhandled error: %v", err.Error())
 				return
 			}
 
-			if _, err := os.Stat(to.Value.String()); os.IsNotExist(err) {
-				logger.Errorf("directory passed to --to option does not exist, received %v", to.Value.String())
+			if fromFileInfo.IsDir() == false {
+				logger.Errorf("path passed to --from option is not directory, received %v", from.Value.String())
+				return
+			}
+
+			toFileInfo, err := os.Stat(to.Value.String())
+			if err != nil {
+				if os.IsNotExist(err) {
+					logger.Errorf("directory passed to --to option does not exist, received %v", to.Value.String())
+					return
+				}
+
+				logger.Errorf("unhandled error: %v", err.Error())
+				return
+			}
+
+			if toFileInfo.IsDir() == false {
+				logger.Errorf("path passed to --to option is not directory, received %v", to.Value.String())
 				return
 			}
 
