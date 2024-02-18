@@ -32,6 +32,17 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			from := cmd.Flag(FLAG_FROM)
 			to := cmd.Flag(FLAG_TO)
+
+			if _, err := os.Stat(from.Value.String()); os.IsNotExist(err) {
+				logger.Errorf("directory passed to --from option does not exist, received %v", from.Value.String())
+				return
+			}
+
+			if _, err := os.Stat(to.Value.String()); os.IsNotExist(err) {
+				logger.Errorf("directory passed to --to option does not exist, received %v", to.Value.String())
+				return
+			}
+
 			logger.Infof("Files will be synchronized from " + from.Value.String() + " directory to " + to.Value.String() + " directory")
 		},
 	}
