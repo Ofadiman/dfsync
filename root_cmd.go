@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -27,17 +28,17 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "dfsync",
 		Short:   "Synchronize dot files",
-		Example: "dfsync --source-directory ./src --target-directory ~/",
+		Example: fmt.Sprintf("dfsync --%v ./src --%v ~/", OPTION_SOURCE_DIRECTORY, OPTION_TARGET_DIRECTORY),
 		Long:    `Dot files sync is a tool that allows you to painlessly synchronize dot files across multiple environments.`,
 		Version: "1.0.0",
 		Run: func(cmd *cobra.Command, args []string) {
-			from := cmd.Flag(OPTION_SOURCE_DIRECTORY)
-			to := cmd.Flag(OPTION_TARGET_DIRECTORY)
+			sourceFlag := cmd.Flag(OPTION_SOURCE_DIRECTORY)
+			targetFlag := cmd.Flag(OPTION_TARGET_DIRECTORY)
 
-			fromFileInfo, err := os.Stat(from.Value.String())
+			sourceEntityInfo, err := os.Stat(sourceFlag.Value.String())
 			if err != nil && os.IsNotExist(err) {
 				if os.IsNotExist(err) {
-					logger.Errorf("path passed to --source-directory option does not exist, received %v", from.Value.String())
+					logger.Errorf("path passed to --%v option does not exist, received %v", OPTION_SOURCE_DIRECTORY, sourceFlag.Value.String())
 					return
 				}
 
@@ -45,15 +46,15 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 				return
 			}
 
-			if fromFileInfo.IsDir() == false {
-				logger.Errorf("path passed to --source-directory option is not directory, received %v", from.Value.String())
+			if sourceEntityInfo.IsDir() == false {
+				logger.Errorf("path passed to --%v option is not directory, received %v", OPTION_SOURCE_DIRECTORY, sourceFlag.Value.String())
 				return
 			}
 
-			toFileInfo, err := os.Stat(to.Value.String())
+			targetEntityInfo, err := os.Stat(targetFlag.Value.String())
 			if err != nil {
 				if os.IsNotExist(err) {
-					logger.Errorf("directory passed to --target-directory option does not exist, received %v", to.Value.String())
+					logger.Errorf("directory passed to --%v option does not exist, received %v", OPTION_TARGET_DIRECTORY, targetFlag.Value.String())
 					return
 				}
 
@@ -61,12 +62,12 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 				return
 			}
 
-			if toFileInfo.IsDir() == false {
-				logger.Errorf("path passed to --target-directory option is not directory, received %v", to.Value.String())
+			if targetEntityInfo.IsDir() == false {
+				logger.Errorf("path passed to --%v option is not directory, received %v", OPTION_TARGET_DIRECTORY, targetFlag.Value.String())
 				return
 			}
 
-			dir, err := os.Open(from.Value.String())
+			dir, err := os.Open(sourceFlag.Value.String())
 			defer dir.Close()
 			if err != nil {
 				logger.Errorf("unhandled error: %v", err.Error())
@@ -75,15 +76,15 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 
 			_, err = dir.Readdirnames(1)
 			if err == io.EOF {
-				logger.Errorf("directory passed to --source-directory option is empty, received %v", from.Value.String())
+				logger.Errorf("directory passed to --%v option is empty, received %v", OPTION_SOURCE_DIRECTORY, sourceFlag.Value.String())
 				return
 			}
 
-			logger.Infof("Files will be synchronized from " + from.Value.String() + " directory to " + to.Value.String() + " directory")
+			logger.Infof("Files will be synchronized from " + sourceFlag.Value.String() + " directory to " + targetFlag.Value.String() + " directory")
 		},
 	}
 
-	command.PersistentFlags().StringP(OPTION_SOURCE_DIRECTORY, "f", cwd, "directory from which symlinks will be created")
+	command.PersistentFlags().StringP(OPTION_SOURCE_DIRECTORY, "s", cwd, "directory from which symlinks will be created")
 	command.PersistentFlags().StringP(OPTION_TARGET_DIRECTORY, "t", home, "directory to which symlinks will be created")
 
 	return command
