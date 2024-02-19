@@ -7,10 +7,16 @@ import (
 )
 
 func getAbsolutePath(path string) string {
-	if strings.HasPrefix(path, "~") {
+	if strings.HasPrefix(path, "~/") {
 		home, _ := os.UserHomeDir()
 
 		return filepath.Clean(filepath.Join(home, strings.TrimPrefix(path, "~/")))
+	}
+
+	if strings.HasPrefix(path, "~") {
+		home, _ := os.UserHomeDir()
+
+		return filepath.Clean(filepath.Join(home, strings.TrimPrefix(path, "~")))
 	}
 
 	if strings.HasPrefix(path, "/") {
