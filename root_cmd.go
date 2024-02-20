@@ -3,9 +3,14 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/log"
+	"github.com/ofadiman/dfsync/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -80,7 +85,32 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 				return
 			}
 
-			logger.Infof("Files will be synchronized from " + sourceFlag.Value.String() + " directory to " + targetFlag.Value.String() + " directory")
+			logger.Infof("Files will be symlinked from " + sourceFlag.Value.String() + " directory to " + targetFlag.Value.String() + " directory")
+
+			filepath.WalkDir(utils.GetAbsolutePath(sourceFlag.Value.String()), func(sourcePath string, d fs.DirEntry, err error) error {
+				cwd, _ := os.Getwd()
+				targetPath := filepath.Join(utils.GetAbsolutePath(targetFlag.Value.String()), strings.Join(strings.Split(strings.TrimPrefix(sourcePath, cwd), "/")[2:], "/"))
+
+				if d.IsDir() {
+					err := os.MkdirAll(targetPath, 0700)
+					if err != nil {
+						logger.Errorf("could not create directory %v", targetPath)
+						logger.Errorf("reason: %v", err.Error())
+					}
+				} else {
+					logger.Infof("creating symlink for %v", sourcePath)
+
+					cmd := exec.Command("ln", "-s", "-f", sourcePath, targetPath)
+					if err := cmd.Run(); err != nil {
+						logger.Errorf("could not create symlink at %v", targetPath)
+						logger.Errorf("reason: %v", err.Error())
+					} else {
+						logger.Infof("%v (created)", targetPath)
+					}
+				}
+
+				return nil
+			})
 		},
 	}
 

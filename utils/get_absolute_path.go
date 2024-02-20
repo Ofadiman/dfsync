@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func getAbsolutePath(path string) string {
+func GetAbsolutePath(path string) string {
 	if strings.HasPrefix(path, "~/") {
 		home, _ := os.UserHomeDir()
 
