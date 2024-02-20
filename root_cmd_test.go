@@ -46,7 +46,7 @@ func (suite *RootCommandSuite) AfterTest() {
 	}
 }
 
-func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToFromOptionDoesNotExist() {
+func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToSourceDirectoryOptionDoesNotExist() {
 	suite.BeforeTest()
 
 	command := createRootCommand(suite.logger)
@@ -61,7 +61,7 @@ func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToFromOptionDoes
 	suite.AfterTest()
 }
 
-func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToFromOptionIsNotDirectory() {
+func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToSourceDirectoryOptionIsNotDirectory() {
 	suite.BeforeTest()
 
 	command := createRootCommand(suite.logger)
@@ -76,37 +76,7 @@ func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToFromOptionIsNo
 	suite.AfterTest()
 }
 
-func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToToOptionDoesNotExist() {
-	suite.BeforeTest()
-
-	command := createRootCommand(suite.logger)
-	command.SetOut(suite.logs)
-	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--target-directory", "memes"})
-
-	command.Execute()
-
-	assert.Equal(suite.T(), "ERRO directory passed to --target-directory option does not exist, received memes\n", suite.logs.String())
-
-	suite.AfterTest()
-}
-
-func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToToOptionIsNotDirectory() {
-	suite.BeforeTest()
-
-	command := createRootCommand(suite.logger)
-	command.SetOut(suite.logs)
-	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--target-directory", suite.file.Name()})
-
-	command.Execute()
-
-	assert.Equal(suite.T(), "ERRO path passed to --target-directory option is not directory, received "+suite.file.Name()+"\n", suite.logs.String())
-
-	suite.AfterTest()
-}
-
-func (suite *RootCommandSuite) TestShouldExitEarlyWhenFromDirectoryIsEmpty() {
+func (suite *RootCommandSuite) TestShouldExitEarlyWhenSourceDirectoryIsEmpty() {
 	suite.BeforeTest()
 
 	command := createRootCommand(suite.logger)
