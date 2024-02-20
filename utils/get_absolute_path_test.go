@@ -52,6 +52,17 @@ func (suite *getAbsolutePathSuite) TestShouldHandleRelativePathsStartingWithDot(
 	assert.Equal(suite.T(), getAbsolutePath("foo/bar/"), filepath.Join(cwd, "foo", "bar"))
 }
 
+func (suite *getAbsolutePathSuite) TestShouldHandleRelativePathsStartingWithTwoDots() {
+	cwd, _ := os.Getwd()
+
+	assert.Equal(suite.T(), filepath.Clean(filepath.Join(cwd, "../")), getAbsolutePath(".."))
+	assert.Equal(suite.T(), filepath.Clean(filepath.Join(cwd, "../")), getAbsolutePath("../"))
+	assert.Equal(suite.T(), filepath.Join(filepath.Clean(filepath.Join(cwd, "../")), "foo"), getAbsolutePath("../foo"))
+	assert.Equal(suite.T(), filepath.Join(filepath.Clean(filepath.Join(cwd, "../")), "foo"), getAbsolutePath("../foo/"))
+	assert.Equal(suite.T(), filepath.Join(filepath.Clean(filepath.Join(cwd, "../")), "foo", "bar"), getAbsolutePath("../foo/bar"))
+	assert.Equal(suite.T(), filepath.Join(filepath.Clean(filepath.Join(cwd, "../")), "foo", "bar"), getAbsolutePath("../foo/bar/"))
+}
+
 func TestGetAbsolutePathSuite(t *testing.T) {
 	suite.Run(t, &getAbsolutePathSuite{})
 }
