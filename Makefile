@@ -1,7 +1,7 @@
 include .env
 
 debug:
-	@go run ./... --source-directory $(DFSYNC_FROM) --target-directory $(DFSYNC_TO)
+	@go run ./... --source-directory $(DFSYNC_FROM)
 
 help:
 	@go run ./... --help
@@ -12,12 +12,9 @@ version:
 test:
 	@go test -v ./...
 
-# `ctrl+p` followed by `ctrl+q` allows to detach session from running container without stopping it.
-container_spawn:
-	@docker run --name dfsync --interactive --tty --detach --rm --workdir /home/go/dfsync/ --volume $(shell pwd):/home/go/dfsync/ golang bash
+run:
+	@docker container run --name dfsync --interactive --tty --rm --volume $(shell pwd):/home/golang/dfsync/ -e LOG_LEVEL=$(LOG_LEVEL) dfsync bash
 
-container_attach:
-	@docker container attach dfsync
- 
-container_stop:
-	@docker container stop dfsync
+build:
+	@docker image build --tag dfsync .
+
