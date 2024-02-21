@@ -3,9 +3,14 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/log"
+	"github.com/ofadiman/dfsync/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -57,6 +62,50 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 				logger.Errorf("directory passed to --%v option is empty, received %v", OPTION_SOURCE_DIRECTORY, sourceFlag.Value.String())
 				return
 			}
+
+			home, _ := os.UserHomeDir()
+			logger.Debugf("home directory: %v", home)
+
+			absolute := utils.GetAbsolutePath(sourceFlag.Value.String())
+			logger.Debugf("absolute path to source directory: %v", absolute)
+
+			filepath.WalkDir(utils.GetAbsolutePath(sourceFlag.Value.String()), func(source string, d fs.DirEntry, err error) error {
+				if source == absolute {
+					logger.Debugf("visiting source directory, no action required")
+					return nil
+				}
+
+				trimmed := strings.TrimPrefix(source, utils.GetAbsolutePath(sourceFlag.Value.String())+"/")
+				target := filepath.Join(home, trimmed)
+
+				if d.IsDir() {
+					_, err := os.Stat(target)
+					if err != nil {
+						if os.IsNotExist(err) {
+							logger.Warnf("directory \"%v\" does not exist, creating it", target)
+
+							err := os.Mkdir(target, 0700)
+							if err != nil {
+								logger.Errorf("unhandled error: %v", err)
+							}
+						}
+
+						logger.Errorf("unhandled error: %v", err)
+					}
+
+					return nil
+				}
+
+				cmd := exec.Command("ln", "-s", "-f", source, target)
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					logger.Errorf("unhandled error: %v", strings.TrimSpace(string(output)))
+				} else {
+					logger.Infof("symlink from \"%v\" to \"%v\" created", source, target)
+				}
+
+				return nil
+			})
 		},
 	}
 
