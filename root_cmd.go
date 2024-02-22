@@ -17,6 +17,8 @@ import (
 const (
 	OPTION_SOURCE_DIRECTORY       = "source-directory"
 	OPTION_SOURCE_DIRECTORY_SHORT = "s"
+	OPTION_DRY                    = "dry"
+	OPTION_DRY_SHORT              = "d"
 )
 
 func createRootCommand(logger *log.Logger) *cobra.Command {
@@ -33,6 +35,7 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 		Version: "1.0.0",
 		Run: func(cmd *cobra.Command, args []string) {
 			sourceFlag := cmd.Flag(OPTION_SOURCE_DIRECTORY)
+			dryFlag := cmd.Flag(OPTION_DRY)
 
 			sourceEntityInfo, err := os.Stat(sourceFlag.Value.String())
 			if err != nil && os.IsNotExist(err) {
@@ -84,6 +87,10 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 						if os.IsNotExist(err) {
 							logger.Warnf("directory \"%v\" does not exist, creating it", target)
 
+							if dryFlag.Value.String() == "true" {
+								return nil
+							}
+
 							err := os.Mkdir(target, 0700)
 							if err != nil {
 								logger.Errorf("unhandled error: %v", err)
@@ -97,6 +104,12 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 				}
 
 				cmd := exec.Command("ln", "-s", "-f", source, target)
+
+				if dryFlag.Value.String() == "true" {
+					logger.Infof("symlink from \"%v\" to \"%v\" created", source, target)
+					return nil
+				}
+
 				output, err := cmd.CombinedOutput()
 				if err != nil {
 					logger.Errorf("unhandled error: %v", strings.TrimSpace(string(output)))
@@ -110,6 +123,7 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 	}
 
 	command.PersistentFlags().StringP(OPTION_SOURCE_DIRECTORY, OPTION_SOURCE_DIRECTORY_SHORT, cwd, "directory from which symlinks will be created")
+	command.PersistentFlags().BoolP(OPTION_DRY, OPTION_DRY_SHORT, false, "simulate the execution of the command without modifying the file system")
 
 	return command
 }
