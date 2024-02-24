@@ -34,19 +34,6 @@ WARN path /home/golang/foo.txt already exists, symlink will not be created becau
 
 ---
 
-[TestRootCommandSuite/TestShouldCreateBackupFilesWhenFileExistsAndBackupIsPassedToConflictResolutionOption - 1]
-DEBU command has been called with the following flags: --source-directory=/tmp/source/, --dry=false, --conflict-resolution=backup
-DEBU home directory: /home/golang/
-DEBU absolute path to source directory: /tmp/source
-DEBU processing path: /tmp/source
-DEBU visiting source directory, no action required
-DEBU processing path: /tmp/source/foo.txt
-WARN path /home/golang/foo.txt already exists, the file will be backed up and symlink will be created because --conflict-resolution flag is set to backup
-INFO file has been successfully backup up under /home/golang/foo.txt.bak
-INFO symlink from "/tmp/source/foo.txt" to "/home/golang/foo.txt" created
-
----
-
 [TestRootCommandSuite/TestShouldCreateBackupFileWhenFileExistsAndBackupIsPassedToConflictResolutionOption - 1]
 DEBU command has been called with the following flags: --source-directory=/tmp/source/, --dry=false, --conflict-resolution=backup
 DEBU home directory: /home/golang/
