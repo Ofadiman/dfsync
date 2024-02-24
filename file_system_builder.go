@@ -25,7 +25,7 @@ func (this *FileSystemBuilder) Symlink(source, target string) *FileSystemBuilder
 	return this
 }
 
-func (this *FileSystemBuilder) Build() func() {
+func (this *FileSystemBuilder) Build() func(additionalCleanupPaths ...string) {
 	for _, dir := range this.directories {
 		err := os.MkdirAll(dir, 0700)
 		if err != nil {
@@ -47,8 +47,7 @@ func (this *FileSystemBuilder) Build() func() {
 		}
 	}
 
-	// Cleanup function
-	return func() {
+	return func(additionalCleanupPaths ...string) {
 		for _, symlink := range this.symlinks {
 			err := os.Remove(symlink[1])
 			if err != nil {
@@ -65,6 +64,13 @@ func (this *FileSystemBuilder) Build() func() {
 
 		for _, dir := range this.directories {
 			err := os.Remove(dir)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		for _, additionalPath := range additionalCleanupPaths {
+			err := os.Remove(additionalPath)
 			if err != nil {
 				panic(err)
 			}

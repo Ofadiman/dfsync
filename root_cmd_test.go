@@ -3,92 +3,136 @@ package main
 import (
 	"bytes"
 	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/charmbracelet/log"
+	"github.com/gkampitakis/go-snaps/snaps"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
 type RootCommandSuite struct {
 	suite.Suite
-	logger       *log.Logger
-	logs         *bytes.Buffer
-	file         *os.File
-	emptyDirPath string
+	logs              *bytes.Buffer
+	command           *cobra.Command
+	fileSystemBuilder *FileSystemBuilder
+	home              string
 }
 
 func (suite *RootCommandSuite) BeforeTest() {
-	buff := new(bytes.Buffer)
-	suite.logs = buff
-	suite.logger = createLogger(buff)
+	suite.T().Setenv("LOG_LEVEL", "debug")
 
-	file, err := os.CreateTemp("/tmp", "")
-	if err != nil {
-		suite.logger.Fatal(err)
-	}
-	suite.file = file
+	home, _ := os.UserHomeDir()
+	suite.home = home
 
-	emptyDirPath, err := os.MkdirTemp("/tmp", "")
-	if err != nil {
-		suite.logger.Fatal(err)
-	}
-	suite.emptyDirPath = emptyDirPath
+	suite.fileSystemBuilder = &FileSystemBuilder{}
+
+	logsBuffer := new(bytes.Buffer)
+	logger := createLogger(logsBuffer)
+
+	suite.logs = logsBuffer
+	suite.command = createRootCommand(logger)
+	suite.command.SetOut(suite.logs)
+	suite.command.SetErr(suite.logs)
 }
 
-func (suite *RootCommandSuite) AfterTest() {
-	if err := os.Remove(suite.file.Name()); err != nil {
-		suite.logger.Fatal(err)
-	}
+func (suite *RootCommandSuite) TestShouldExitEarlyWhenConflictResolutionFlagIsInvalid() {
+	suite.BeforeTest()
 
-	if err := os.Remove(suite.emptyDirPath); err != nil {
-		suite.logger.Fatal(err)
-	}
+	suite.command.SetArgs([]string{"--conflict-resolution", "bar"})
+	suite.command.Execute()
+
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
 }
 
 func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToSourceDirectoryOptionDoesNotExist() {
 	suite.BeforeTest()
 
-	command := createRootCommand(suite.logger)
-	command.SetOut(suite.logs)
-	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--source-directory", "memes"})
+	suite.command.SetArgs([]string{"--source-directory", "/foo/bar/buzz"})
+	suite.command.Execute()
 
-	command.Execute()
-
-	assert.Equal(suite.T(), "ERRO path passed to --source-directory option does not exist, received memes\n", suite.logs.String())
-
-	suite.AfterTest()
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
 }
 
 func (suite *RootCommandSuite) TestShouldExitEarlyWhenPathPassedToSourceDirectoryOptionIsNotDirectory() {
 	suite.BeforeTest()
 
-	command := createRootCommand(suite.logger)
-	command.SetOut(suite.logs)
-	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--source-directory", suite.file.Name()})
+	filePath := "/tmp/foo.txt"
+	cleanup := suite.fileSystemBuilder.File(filePath).Build()
+	defer cleanup()
 
-	command.Execute()
+	suite.command.SetArgs([]string{"--source-directory", filePath})
+	suite.command.Execute()
 
-	assert.Equal(suite.T(), "ERRO path passed to --source-directory option is not directory, received "+suite.file.Name()+"\n", suite.logs.String())
-
-	suite.AfterTest()
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
 }
 
 func (suite *RootCommandSuite) TestShouldExitEarlyWhenSourceDirectoryIsEmpty() {
 	suite.BeforeTest()
 
-	command := createRootCommand(suite.logger)
-	command.SetOut(suite.logs)
-	command.SetErr(suite.logs)
-	command.SetArgs([]string{"--source-directory", suite.emptyDirPath})
+	emptyDirPath := "/tmp/source/"
+	cleanup := suite.fileSystemBuilder.Directory(emptyDirPath).Build()
+	defer cleanup()
 
-	command.Execute()
+	suite.command.SetArgs([]string{"--source-directory", emptyDirPath})
+	suite.command.Execute()
 
-	assert.Equal(suite.T(), "ERRO directory passed to --source-directory option is empty, received "+suite.emptyDirPath+"\n", suite.logs.String())
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
+}
 
-	suite.AfterTest()
+func (suite *RootCommandSuite) TestShouldDoNothingWhenFileExistsAndNoActionIsPassedToConflictResolutionOption() {
+	suite.BeforeTest()
+
+	sourceDirectoryPath := "/tmp/source/"
+	sourceFilePath := "/tmp/source/foo.txt"
+	homeFilePath := filepath.Join(suite.home, "foo.txt")
+	cleanup := suite.fileSystemBuilder.Directory(sourceDirectoryPath).File(sourceFilePath).File(homeFilePath).Build()
+	defer cleanup()
+
+	suite.command.SetArgs([]string{"--source-directory", sourceDirectoryPath})
+	suite.command.Execute()
+
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
+	homeFileStat, _ := os.Lstat(homeFilePath)
+	assert.NotEqual(suite.T(), os.ModeSymlink, homeFileStat.Mode()&os.ModeSymlink)
+}
+
+func (suite *RootCommandSuite) TestShouldCreateBackupFileWhenFileExistsAndBackupIsPassedToConflictResolutionOption() {
+	suite.BeforeTest()
+
+	sourceDirectoryPath := "/tmp/source/"
+	sourceFilePath := "/tmp/source/foo.txt"
+	homeFilePath := filepath.Join(suite.home, "foo.txt")
+	homeBackupFilePath := homeFilePath + ".bak"
+	cleanup := suite.fileSystemBuilder.Directory(sourceDirectoryPath).File(sourceFilePath).File(homeFilePath).Build()
+	defer cleanup(homeBackupFilePath)
+
+	suite.command.SetArgs([]string{"--source-directory", sourceDirectoryPath, "--conflict-resolution", "backup"})
+	suite.command.Execute()
+
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
+	homeFileStat, _ := os.Lstat(homeFilePath)
+	assert.Equal(suite.T(), os.ModeSymlink, homeFileStat.Mode()&os.ModeSymlink)
+	_, err := os.Lstat(homeBackupFilePath)
+	assert.Nil(suite.T(), err)
+}
+
+func (suite *RootCommandSuite) TestShouldOverrideFileWhenFileExistsAndOverrideIsPassedToConflictResolutionOption() {
+	suite.BeforeTest()
+
+	sourceDirectoryPath := "/tmp/source/"
+	sourceFilePath := "/tmp/source/foo.txt"
+	homeFilePath := filepath.Join(suite.home, "foo.txt")
+	cleanup := suite.fileSystemBuilder.Directory(sourceDirectoryPath).File(sourceFilePath).File(homeFilePath).Build()
+	defer cleanup()
+
+	suite.command.SetArgs([]string{"--source-directory", sourceDirectoryPath, "--conflict-resolution", "override"})
+	suite.command.Execute()
+
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
+	homeFileStat, _ := os.Lstat(homeFilePath)
+	assert.Equal(suite.T(), os.ModeSymlink, homeFileStat.Mode()&os.ModeSymlink)
 }
 
 func TestRootCommandSuite(t *testing.T) {

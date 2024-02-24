@@ -46,6 +46,7 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 			sourceFlag := cmd.Flag(OPTION_SOURCE_DIRECTORY)
 			dryFlag := cmd.Flag(OPTION_DRY)
 			conflictResolutionFlag := cmd.Flag(OPTION_CONFLICT_RESOLUTION)
+
 			logger.Debugf("command has been called with the following flags: --%v=%v, --%v=%v, --%v=%v", OPTION_SOURCE_DIRECTORY, sourceFlag.Value.String(), OPTION_DRY, dryFlag.Value.String(), OPTION_CONFLICT_RESOLUTION, conflictResolutionFlag.Value.String())
 
 			if slices.Contains[[]string, string](validConflictResolutionFlagValues, conflictResolutionFlag.Value.String()) == false {
@@ -89,7 +90,6 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 			logger.Debugf("absolute path to source directory: %v", absolute)
 
 			filepath.WalkDir(getAbsolutePath(sourceFlag.Value.String()), func(source string, d fs.DirEntry, err error) error {
-				println()
 				logger.Debugf("processing path: %v", source)
 				if source == absolute {
 					logger.Debugf("visiting source directory, no action required")
@@ -109,6 +109,7 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 								return nil
 							}
 
+							// TODO: I probably need to check if directory that I am creating here contains files that are to be symlinked. If not, there is no point of creating that directory in file system.
 							err := os.Mkdir(target, 0700)
 							if err != nil {
 								logger.Errorf("unhandled error: %v", err)
@@ -171,7 +172,6 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 
 				output, err := cmd.CombinedOutput()
 				if err != nil {
-					logger.Debugf("am i here?")
 					logger.Errorf("unhandled error: %v", strings.TrimSpace(string(output)))
 				} else {
 					logger.Infof("symlink from \"%v\" to \"%v\" created", source, target)
