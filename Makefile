@@ -1,7 +1,7 @@
 include .env
 
 debug:
-	@go run ./... --source-directory $(DFSYNC_FROM)
+	@go run ./... --source-directory $(SOURCE_DIRECTORY)
 
 help:
 	@go run ./... --help
