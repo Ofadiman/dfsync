@@ -7,6 +7,11 @@ ERRO error message: 129cd79c-e568-4a8e-8bd9-82eec11f42a4
 
 ---
 
+[TestShouldLogErrorMessagesAndAbove - 1]
+ERRO error message: 129cd79c-e568-4a8e-8bd9-82eec11f42a4
+
+---
+
 [TestShouldLogInfoMessagesAndAbove - 1]
 INFO info message: 9f35397c-65c1-4d59-bf83-4d578e0ab104
 WARN warn message: f13077ec-b2d8-44e6-a237-c84b369c7a1e
@@ -16,11 +21,6 @@ ERRO error message: 129cd79c-e568-4a8e-8bd9-82eec11f42a4
 
 [TestShouldLogWarnMessagesAndAbove - 1]
 WARN warn message: f13077ec-b2d8-44e6-a237-c84b369c7a1e
-ERRO error message: 129cd79c-e568-4a8e-8bd9-82eec11f42a4
-
----
-
-[TestShouldLogErrorMessagesAndAbove - 1]
 ERRO error message: 129cd79c-e568-4a8e-8bd9-82eec11f42a4
 
 ---
