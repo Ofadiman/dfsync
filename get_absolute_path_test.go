@@ -16,8 +16,8 @@ type getAbsolutePathSuite struct {
 func (suite *getAbsolutePathSuite) TestShouldHandleHomePaths() {
 	home, _ := os.UserHomeDir()
 
-	assert.Equal(suite.T(), home, getAbsolutePath("~"))
-	assert.Equal(suite.T(), home, getAbsolutePath("~/"))
+	assert.Equal(suite.T(), filepath.Clean(home), getAbsolutePath("~"))
+	assert.Equal(suite.T(), filepath.Clean(home), getAbsolutePath("~/"))
 	assert.Equal(suite.T(), filepath.Join(home, "foo"), getAbsolutePath("~/foo"))
 	assert.Equal(suite.T(), filepath.Join(home, "foo"), getAbsolutePath("~/foo/"))
 	assert.Equal(suite.T(), filepath.Join(home, "foo/bar"), getAbsolutePath("~/foo/bar"))
