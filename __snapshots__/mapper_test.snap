@@ -1,0 +1,16 @@
+
+[TestShouldMapOverSliceOfStrings - 1]
+[
+ "foo:new",
+ "bar:new",
+ "buzz:new"
+]
+---
+
+[TestShouldMapOverSliceOfIntegers - 1]
+[
+ 2,
+ 4,
+ 6
+]
+---

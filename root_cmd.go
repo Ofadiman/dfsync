@@ -184,7 +184,9 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 
 	command.PersistentFlags().StringP(OPTION_SOURCE_DIRECTORY, OPTION_SOURCE_DIRECTORY_SHORT, cwd, "directory from which symlinks will be created")
 	command.PersistentFlags().BoolP(OPTION_DRY, OPTION_DRY_SHORT, false, "simulate the execution of the command without modifying the file system")
-	command.PersistentFlags().StringP(OPTION_CONFLICT_RESOLUTION, OPTION_CONFLICT_RESOLUTION_SHORT, "no-action", "decide what to do with the file that exists where the symlink should be created")
+	command.PersistentFlags().StringP(OPTION_CONFLICT_RESOLUTION, OPTION_CONFLICT_RESOLUTION_SHORT, "no-action", fmt.Sprintf("decide what to do with the file that exists where the symlink should be created (valid options: %v)", strings.Join(mapper[string, string](validConflictResolutionFlagValues, func(s string) string {
+		return fmt.Sprintf("\"%v\"", s)
+	}), ", ")))
 
 	return command
 }
