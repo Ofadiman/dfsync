@@ -1,4 +1,4 @@
-package utils
+package main
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func GetAbsolutePath(path string) string {
+func getAbsolutePath(path string) string {
 	if strings.HasPrefix(path, "~/") {
 		home, _ := os.UserHomeDir()
 

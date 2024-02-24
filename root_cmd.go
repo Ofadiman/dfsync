@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
-	"github.com/ofadiman/dfsync/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -86,10 +85,10 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 			home, _ := os.UserHomeDir()
 			logger.Debugf("home directory: %v", home)
 
-			absolute := utils.GetAbsolutePath(sourceFlag.Value.String())
+			absolute := getAbsolutePath(sourceFlag.Value.String())
 			logger.Debugf("absolute path to source directory: %v", absolute)
 
-			filepath.WalkDir(utils.GetAbsolutePath(sourceFlag.Value.String()), func(source string, d fs.DirEntry, err error) error {
+			filepath.WalkDir(getAbsolutePath(sourceFlag.Value.String()), func(source string, d fs.DirEntry, err error) error {
 				println()
 				logger.Debugf("processing path: %v", source)
 				if source == absolute {
@@ -97,7 +96,7 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 					return nil
 				}
 
-				trimmed := strings.TrimPrefix(source, utils.GetAbsolutePath(sourceFlag.Value.String())+"/")
+				trimmed := strings.TrimPrefix(source, getAbsolutePath(sourceFlag.Value.String())+"/")
 				target := filepath.Join(home, trimmed)
 
 				if d.IsDir() {
