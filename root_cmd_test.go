@@ -37,6 +37,14 @@ func (suite *RootCommandSuite) BeforeTest() {
 	suite.command.SetErr(suite.logs)
 }
 
+func (suite *RootCommandSuite) TestShouldShowHelpMenuWhenCalledWithoutArguments() {
+	suite.BeforeTest()
+
+	suite.command.Execute()
+
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
+}
+
 func (suite *RootCommandSuite) TestShouldExitEarlyWhenConflictResolutionFlagIsInvalid() {
 	suite.BeforeTest()
 

@@ -43,6 +43,12 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 		Long:    `Dot files sync is a tool that allows you to painlessly synchronize dot files across multiple environments.`,
 		Version: "1.0.0",
 		Run: func(cmd *cobra.Command, args []string) {
+			isCalledWithoutArguments := cmd.Flags().NFlag() == 0
+			if isCalledWithoutArguments {
+				cmd.Help()
+				return
+			}
+
 			sourceFlag := cmd.Flag(OPTION_SOURCE_DIRECTORY)
 			dryFlag := cmd.Flag(OPTION_DRY)
 			conflictResolutionFlag := cmd.Flag(OPTION_CONFLICT_RESOLUTION)

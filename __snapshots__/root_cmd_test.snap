@@ -58,3 +58,21 @@ WARN path /home/golang/foo.txt already exists, the file will be deleted and syml
 INFO symlink from "/tmp/source/foo.txt" to "/home/golang/foo.txt" created
 
 ---
+
+[TestRootCommandSuite/TestShouldShowHelpMenuWhenCalledWithoutArguments - 1]
+Dot files sync is a tool that allows you to painlessly synchronize dot files across multiple environments.
+
+Usage:
+  dfsync [flags]
+
+Examples:
+dfsync --source-directory ./src
+
+Flags:
+  -c, --conflict-resolution string   decide what to do with the file that exists where the symlink should be created (valid options: "no-action", "backup", "override") (default "no-action")
+  -d, --dry                          simulate the execution of the command without modifying the file system
+  -h, --help                         help for dfsync
+  -s, --source-directory string      directory from which symlinks will be created (default "/home/golang/dfsync")
+  -v, --version                      version for dfsync
+
+---
