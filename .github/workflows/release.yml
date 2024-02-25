@@ -1,0 +1,34 @@
+name: Release
+
+on:
+  release:
+    types:
+      - created
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  releases:
+    name: Release binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos:
+          - linux
+          - darwin
+        goarch:
+          - amd64
+          - arm64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: wangyoucao577/go-release-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
+          goversion: 1.21.5
+          binary_name: "dfsync"
