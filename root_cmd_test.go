@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -141,6 +142,28 @@ func (suite *RootCommandSuite) TestShouldOverrideFileWhenFileExistsAndOverrideIs
 	snaps.MatchSnapshot(suite.T(), suite.logs.String())
 	homeFileStat, _ := os.Lstat(homeFilePath)
 	assert.Equal(suite.T(), os.ModeSymlink, homeFileStat.Mode()&os.ModeSymlink)
+}
+
+func (suite *RootCommandSuite) TestShouldDoNothingWhenDryModeIsOn() {
+	suite.BeforeTest()
+
+	sourceDirectoryPath := "/tmp/source/"
+	nestedDirectoryPath := "/tmp/source/nested/"
+	fooFileSourcePath := "/tmp/source/foo.txt"
+	barFileSourcePath := "/tmp/source/nested/bar.txt"
+	fooFileTargetPath := filepath.Join(suite.home, "foo.txt")
+	barFileTargetPath := filepath.Join(suite.home, "nested", "bar.txt")
+	cleanup := suite.fileSystemBuilder.Directory(sourceDirectoryPath).Directory(nestedDirectoryPath).File(fooFileSourcePath).File(barFileSourcePath).Build()
+	defer cleanup()
+
+	suite.command.SetArgs([]string{"--source-directory", sourceDirectoryPath, "--dry", "true"})
+	suite.command.Execute()
+
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
+	_, err1 := os.Lstat(fooFileTargetPath)
+	assert.True(suite.T(), errors.Is(err1, os.ErrNotExist))
+	_, err2 := os.Lstat(barFileTargetPath)
+	assert.True(suite.T(), errors.Is(err2, os.ErrNotExist))
 }
 
 func TestRootCommandSuite(t *testing.T) {

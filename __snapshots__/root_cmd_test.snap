@@ -12,6 +12,20 @@ INFO symlink from "/tmp/source/foo.txt" to "/home/golang/foo.txt" created
 
 ---
 
+[TestRootCommandSuite/TestShouldDoNothingWhenDryModeIsOn - 1]
+DEBU command has been called with the following flags: --source-directory=/tmp/source/, --dry=true, --conflict-resolution=no-action
+DEBU home directory: /home/golang/
+DEBU absolute path to source directory: /tmp/source
+DEBU processing path: /tmp/source
+DEBU visiting source directory, no action required
+DEBU processing path: /tmp/source/foo.txt
+INFO symlink from "/tmp/source/foo.txt" to "/home/golang/foo.txt" created
+DEBU processing path: /tmp/source/nested
+DEBU processing path: /tmp/source/nested/bar.txt
+INFO symlink from "/tmp/source/nested/bar.txt" to "/home/golang/nested/bar.txt" created
+
+---
+
 [TestRootCommandSuite/TestShouldDoNothingWhenFileExistsAndNoActionIsPassedToConflictResolutionOption - 1]
 DEBU command has been called with the following flags: --source-directory=/tmp/source/, --dry=false, --conflict-resolution=no-action
 DEBU home directory: /home/golang/
