@@ -109,17 +109,32 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 					_, err := os.Stat(target)
 					if err != nil {
 						if os.IsNotExist(err) {
-							logger.Warnf("directory \"%v\" does not exist, creating it", target)
+							logger.Warnf("directory \"%v\" does not exist", target)
 
-							if dryFlag.Value.String() == "true" {
+							sourceDir, err := os.Open(source)
+							defer sourceDir.Close()
+							if err != nil {
+								logger.Errorf("unhandled error: %v", err.Error())
 								return nil
 							}
 
-							// TODO: I probably need to check if directory that I am creating here contains files that are to be symlinked. If not, there is no point of creating that directory in file system.
-							err := os.Mkdir(target, 0700)
+							_, err = sourceDir.Readdirnames(1)
+							if err == io.EOF {
+								logger.Warnf("directory %v is empty, continue to next iteration", source)
+								return nil
+							}
+
+							if dryFlag.Value.String() == "true" {
+								logger.Infof("directory %v created", target)
+								return nil
+							}
+
+							err = os.Mkdir(target, 0700)
 							if err != nil {
 								logger.Errorf("unhandled error: %v", err)
 								return nil
+							} else {
+								logger.Infof("directory %v created", target)
 							}
 						}
 					}
@@ -127,7 +142,6 @@ func createRootCommand(logger *log.Logger) *cobra.Command {
 					return nil
 				}
 
-				// TODO: Check how this command would behave if target path is symbolik link.
 				_, err = os.Stat(target)
 				if err != nil && errors.Is(err, os.ErrNotExist) == false {
 					logger.Errorf("unhandled error: %v", err)

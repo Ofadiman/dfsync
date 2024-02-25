@@ -166,6 +166,23 @@ func (suite *RootCommandSuite) TestShouldDoNothingWhenDryModeIsOn() {
 	assert.True(suite.T(), errors.Is(err2, os.ErrNotExist))
 }
 
+func (suite *RootCommandSuite) TestShouldDoNothingWhenSourceDirectoryIsEmpty() {
+	suite.BeforeTest()
+
+	sourceDirectoryPath := "/tmp/source/"
+	nestedDirectoryPath := "/tmp/source/nested/"
+	nestedDirectoryTargetPath := filepath.Join(suite.home, "nested")
+	cleanup := suite.fileSystemBuilder.Directory(sourceDirectoryPath).Directory(nestedDirectoryPath).Build()
+	defer cleanup()
+
+	suite.command.SetArgs([]string{"--source-directory", sourceDirectoryPath})
+	suite.command.Execute()
+
+	snaps.MatchSnapshot(suite.T(), suite.logs.String())
+	_, err := os.Lstat(nestedDirectoryTargetPath)
+	assert.True(suite.T(), errors.Is(err, os.ErrNotExist))
+}
+
 func TestRootCommandSuite(t *testing.T) {
 	suite.Run(t, &RootCommandSuite{})
 }
