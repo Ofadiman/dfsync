@@ -49,28 +49,28 @@ func (this *FileSystemBuilder) Build() func(additionalCleanupPaths ...string) {
 
 	return func(additionalCleanupPaths ...string) {
 		for _, symlink := range this.symlinks {
-			err := os.Remove(symlink[1])
+			err := os.RemoveAll(symlink[1])
 			if err != nil {
 				panic(err)
 			}
 		}
 
 		for _, file := range this.files {
-			err := os.Remove(file)
+			err := os.RemoveAll(file)
 			if err != nil {
 				panic(err)
 			}
 		}
 
 		for _, dir := range this.directories {
-			err := os.Remove(dir)
+			err := os.RemoveAll(dir)
 			if err != nil {
 				panic(err)
 			}
 		}
 
 		for _, additionalPath := range additionalCleanupPaths {
-			err := os.Remove(additionalPath)
+			err := os.RemoveAll(additionalPath)
 			if err != nil {
 				panic(err)
 			}
