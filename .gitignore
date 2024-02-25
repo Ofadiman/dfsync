@@ -5,3 +5,6 @@
 # Test files
 from/
 to/
+
+# Build files
+dist/*

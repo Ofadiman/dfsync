@@ -18,3 +18,5 @@ run:
 build:
 	@docker image build --tag dfsync .
 
+binary:
+	@go build -o dist/dfsync -race
